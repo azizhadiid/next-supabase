@@ -35,7 +35,14 @@ const Home = () => {
                   <h4 className="font-semibold text-xl">{menu.name}</h4>
                   <p>{menu.category}</p>
                 </div>
-                <p className="font-semibold text-2xl">Rp. {menu.price}.00</p>
+                <p className="font-semibold text-2xl">
+                  {new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(menu.price)}
+                </p>
               </div>
             </CardContent>
             <CardFooter>

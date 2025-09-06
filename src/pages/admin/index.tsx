@@ -1,13 +1,29 @@
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import supabase from "@/lib/db";
 import type { IMenu } from "@/types/menu";
 import { Ellipsis } from "lucide-react";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function AdminPage() {
     const [menus, setMenus] = useState<IMenu[]>([]);
+    const [createDialog, setCreateDialog] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+
+    const categories = [
+        "Makanan Berat",
+        "Minuman",
+        "Snack",
+        "Dessert",
+        "Appetizer",
+    ];
 
     useEffect(() => {
         const fetchMenus = async () => {
@@ -20,11 +36,107 @@ export default function AdminPage() {
         fetchMenus();
     }, [supabase]);
 
+    const handleAddMenu = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.currentTarget);
+
+        try {
+            const { data, error } = await supabase
+                .from('menus')
+                .insert(Object.fromEntries(formData))
+                .select();
+
+            if (error) console.log('error: ', error);
+            else {
+                if (data) {
+                    setMenus((prev) => [...data, ...prev]);
+                }
+                toast('Menu Succes Added!');
+                setCreateDialog(false);
+            }
+        } catch (error) {
+            if (error) console.log('error: ', error);
+        }
+    }
+
     return (
         <div className="container mx-auto py-8">
             <div className="mb-4 w-full flex justify-between">
                 <div className="text-3xl font-bold">Menu</div>
-                <Button className="font-bold">Add Menu</Button>
+                <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+                    <DialogTrigger asChild>
+                        <Button className="font-bold">Add Menu</Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="sm:max-w-md">
+                        <form onSubmit={handleAddMenu} className="space-y-4">
+                            <DialogHeader>
+                                <DialogTitle>Add Menu</DialogTitle>
+                                <DialogDescription>Create a new menu by insert in this form.</DialogDescription>
+                            </DialogHeader>
+
+                            <div className="grid w-full gap-4">
+                                <div className="grid w-full gap-1.5">
+                                    <Label htmlFor="name">Name Menu</Label>
+                                    <Input id="name" name="name" placeholder="Insert Name" required />
+                                </div>
+
+                                <div className="grid w-full gap-1.5">
+                                    <Label htmlFor="price">Price Menu</Label>
+                                    <Input id="price" name="price" placeholder="Insert Price" required />
+                                </div>
+
+                                <div className="grid w-full gap-1.5">
+                                    <Label htmlFor="image">Image Menu</Label>
+                                    <Input id="image" name="image" placeholder="Insert Image" required />
+                                </div>
+
+                                <div className="grid w-full gap-1.5">
+                                    <Label htmlFor="category">Category Menu</Label>
+                                    <Select onValueChange={setSelectedCategory} value={selectedCategory} name="category" required>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Pilih kategori menu" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>Category</SelectLabel>
+                                                {categories.map((category) => (
+                                                    <SelectItem key={category} value={category}>
+                                                        {category}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="grid w-full gap-1.5">
+                                    <Label htmlFor="description">Description Menu</Label>
+                                    <Textarea
+                                        id="description"
+                                        name="description"
+                                        placeholder="Enter menu description here..."
+                                        required
+                                        className="resize-none h-32"
+                                    />
+                                </div>
+
+                                <DialogFooter>
+                                    {/* Tombol untuk menutup dialog tanpa aksi */}
+                                    <DialogClose asChild>
+                                        <Button type="button" variant="secondary" className="cursor-pointer">
+                                            Close
+                                        </Button>
+                                    </DialogClose>
+
+                                    {/* Tombol untuk melakukan aksi utama (misalnya, menyimpan) */}
+                                    <Button type="submit" className="cursor-pointer">Submit</Button>
+                                </DialogFooter>
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
             <div>
                 <Table>
@@ -51,7 +163,12 @@ export default function AdminPage() {
                                     {menu.category}
                                 </TableCell>
                                 <TableCell>
-                                    Rp. {menu.price}.00
+                                    {new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    }).format(menu.price)}
                                 </TableCell>
                                 <TableCell>
                                     <DropdownMenu>

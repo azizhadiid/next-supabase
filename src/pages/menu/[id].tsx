@@ -41,7 +41,14 @@ const DetailMenu = () => {
                             <p className="text-xl mb-4 text-neutral-500">{menu.description}</p>
 
                             <div className="flex gap-4 items-center">
-                                <p className="text-4xl font-bold">Rp. {menu.price}.00</p>
+                                <p className="text-4xl font-bold">
+                                    {new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    }).format(menu.price)}
+                                </p>
                                 <Button className="text-lg py-6 font-bold" size='lg'>Buy Now</Button>
                             </div>
                         </div>
