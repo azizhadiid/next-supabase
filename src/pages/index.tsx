@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import supabase from "@/lib/db";
 import type { IMenu } from "@/types/menu";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const Home = () => {
@@ -10,7 +11,7 @@ const Home = () => {
 
   useEffect(() => {
     const fetchMenus = async () => {
-      const { data, error } = await supabase.from('menus').select('*');
+      const { data, error } = await supabase.from('menus').select('*').order('name', { ascending: true });
 
       if (error) console.log('error: ', error);
       else setMenus(data);
@@ -38,7 +39,9 @@ const Home = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Detail Menu</Button>
+              <Link href={`/menu/${menu.id}`} className="w-full">
+                <Button className="w-full font-bold" size="lg">Detail Menu</Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}
