@@ -80,7 +80,31 @@ export default function AdminPage() {
         } catch (error) {
             if (error) console.log('error: ', error);
         }
-    }
+    };
+
+    // Kode yang benar
+    const handleEditMenu = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.currentTarget);
+
+        try {
+            const { error } = await supabase
+                .from('menus')
+                .update(Object.fromEntries(formData))
+                .eq('id', selectedMenu?.menu.id);
+
+            if (error) {
+                console.log('error: ', error);
+            } else {
+                setMenus((prev) => prev.map((menu) => menu.id === selectedMenu?.menu.id ? { ...menu, ...Object.fromEntries(formData) } : menu));
+                toast('Menu Succes Edited!');
+                setSelectedMenu(null);
+            }
+        } catch (error) {
+            if (error) console.log('error: ', error);
+        }
+    };
 
     return (
         <div className="container mx-auto py-8">
@@ -203,7 +227,9 @@ export default function AdminPage() {
                                             </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuGroup>
-                                                <DropdownMenuItem>Update</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => {
+                                                    setSelectedMenu({ menu, action: 'edit' })
+                                                }}>Edit</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-400" onClick={() => {
                                                     setSelectedMenu({ menu, action: 'delete' })
                                                 }}>Delete</DropdownMenuItem>
@@ -240,6 +266,81 @@ export default function AdminPage() {
                         {/* Tombol untuk melakukan aksi utama (misalnya, menyimpan) */}
                         <Button onClick={handleDeleteMenu} className="cursor-pointer" variant={'destructive'}>Delete</Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={selectedMenu !== null && selectedMenu.action === 'edit'} onOpenChange={(open) => {
+                if (!open) {
+                    setSelectedMenu(null);
+                }
+            }}>
+
+                <DialogContent className="sm:max-w-md">
+                    <form onSubmit={handleEditMenu} className="space-y-4">
+                        <DialogHeader>
+                            <DialogTitle>Edit Menu</DialogTitle>
+                            <DialogDescription>Update an existing menu item using this form.</DialogDescription>
+                        </DialogHeader>
+
+                        <div className="grid w-full gap-4">
+                            <div className="grid w-full gap-1.5">
+                                <Label htmlFor="name">Name Menu</Label>
+                                <Input id="name" name="name" placeholder="Insert Name" defaultValue={selectedMenu?.menu.name} />
+                            </div>
+
+                            <div className="grid w-full gap-1.5">
+                                <Label htmlFor="price">Price Menu</Label>
+                                <Input id="price" name="price" placeholder="Insert Price" defaultValue={selectedMenu?.menu.price} />
+                            </div>
+
+                            <div className="grid w-full gap-1.5">
+                                <Label htmlFor="image">Image Menu</Label>
+                                <Input id="image" name="image" placeholder="Insert Image" defaultValue={selectedMenu?.menu.image} />
+                            </div>
+
+                            <div className="grid w-full gap-1.5">
+                                <Label htmlFor="category">Category Menu</Label>
+                                <Select onValueChange={setSelectedCategory} value={selectedCategory} name="category" defaultValue={selectedMenu?.menu.category} >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Pilih kategori menu" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Category</SelectLabel>
+                                            {categories.map((category) => (
+                                                <SelectItem key={category} value={category}>
+                                                    {category}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid w-full gap-1.5">
+                                <Label htmlFor="description">Description Menu</Label>
+                                <Textarea
+                                    id="description"
+                                    name="description"
+                                    placeholder="Enter menu description here..."
+                                    className="resize-none h-32"
+                                    defaultValue={selectedMenu?.menu.description}
+                                />
+                            </div>
+
+                            <DialogFooter>
+                                {/* Tombol untuk menutup dialog tanpa aksi */}
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary" className="cursor-pointer">
+                                        Close
+                                    </Button>
+                                </DialogClose>
+
+                                {/* Tombol untuk melakukan aksi utama (misalnya, menyimpan) */}
+                                <Button type="submit" className="cursor-pointer">Submit</Button>
+                            </DialogFooter>
+                        </div>
+                    </form>
                 </DialogContent>
             </Dialog>
         </div >
