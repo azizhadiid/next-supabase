@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import supabase from "@/lib/db";
 import type { IMenu } from "@/types/menu";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -18,7 +17,7 @@ const Home = () => {
     };
 
     fetchMenus();
-  }, [supabase]);
+  }, []);
 
   return (
     <div className="container mx-auto py-8">

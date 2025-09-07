@@ -38,7 +38,7 @@ export default function AdminPage() {
         };
 
         fetchMenus();
-    }, [supabase]);
+    }, []);
 
     const handleAddMenu = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -66,7 +66,7 @@ export default function AdminPage() {
 
     const handleDeleteMenu = async () => {
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('menus')
                 .delete()
                 .eq('id', selectedMenu?.menu.id);
@@ -197,7 +197,7 @@ export default function AdminPage() {
                     </TableHeader>
                     <TableBody>
                         {menus.map((menu: IMenu) => (
-                            <TableRow>
+                            <TableRow key={menu.id}>
                                 <TableCell className="flex gap-3 items-center w-full">
                                     <img src={menu.image} alt={menu.name} width={50} height={50} className="aspect-square object-cover rounded-lg" />
                                     {menu.name}
